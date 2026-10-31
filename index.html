@@ -702,6 +702,7 @@
           pens: 0,
           fw: null,
           greenAt: null,
+          shots: [],
         };
         resetInputs();
         if (onGreen()) T.greenAt = 0;
@@ -738,7 +739,9 @@
           pens: T.pens,
           fw: T.fw,
           greenAt: T.greenAt,
+          ns: T.shots.length,
         });
+        T.shots.push({ d, v });
         if (Math.abs(v) > lim)
           why.push(
             "variation " +
@@ -772,6 +775,17 @@
           T.dist = r1(Math.sqrt(forwardDist ** 2 + sideDist ** 2));
           T.strokes += 1;
           const fair = Math.abs(v) <= lim / 2;
+          const miss =
+            v === 0
+              ? "Dead straight. "
+              : fmt1(Math.abs(v)) +
+                " yds " +
+                (v < 0 ? "left" : "right") +
+                (d > 0
+                  ? " (" +
+                    ((Math.abs(v) * 100) / d).toFixed(1) +
+                    "% of the shot). "
+                  : ". ");
           if (T.fw === null) T.fw = fair;
           if (T.greenAt === null && onGreen()) T.greenAt = T.strokes;
           T.msg = onGreen()
@@ -788,6 +802,7 @@
                 t: "ok",
                 s:
                   (fair ? "You hit the fairway. " : "You are in the rough. ") +
+                  miss +
                   "Ball is now " +
                   fmt1(T.dist) +
                   " yds from the hole.",
@@ -804,6 +819,7 @@
         T.pens = last.pens;
         T.fw = last.fw;
         T.greenAt = last.greenAt;
+        if (last.ns !== undefined) T.shots.length = last.ns;
         resetInputs();
         T.msg = { t: "ok", s: "Last shot undone." };
         render();
@@ -816,6 +832,7 @@
           fw: T.fw,
           gir: T.greenAt !== null && T.greenAt <= curHole().par - 2,
           putts: T.putts,
+          shots: T.shots.slice(),
         };
         if (T.strokes - curHole().par < 0) buzz(150);
         screen = "result";
@@ -1260,6 +1277,42 @@
         });
         const srow = (label, key) =>
           `<tr><td class="hn">${label}</td>${st.map((x) => `<td>${x[key]}</td>`).join("")}</tr>`;
+        const shape = (() => {
+          const blocks = G.players
+            .map((p, i) => {
+              const shots = [];
+              G.stats[i].forEach((x) => {
+                if (x && x.shots) shots.push(...x.shots);
+              });
+              if (!shots.length) return "";
+              const L = shots.filter((s) => s.v < 0),
+                R = shots.filter((s) => s.v > 0),
+                S = shots.length - L.length - R.length;
+              const sumAbs = (a) => a.reduce((t, s) => t + Math.abs(s.v), 0),
+                sumD = (a) => a.reduce((t, s) => t + s.d, 0);
+              const pctD = (a) =>
+                sumD(a) > 0
+                  ? ((sumAbs(a) * 100) / sumD(a)).toFixed(1) + "% of distance"
+                  : "";
+              const side = (name, a, col) =>
+                `<span style="color:${col}">■</span> ${name} <b>${a.length}</b> (${pct(a.length, shots.length)})` +
+                (a.length
+                  ? ` · avg ${(sumAbs(a) / a.length).toFixed(1)} yds · ${pctD(a)}`
+                  : "");
+              const avg = sumAbs(shots) / shots.length,
+                bias = shots.reduce((t, s) => t + s.v, 0) / shots.length;
+              const tend =
+                Math.abs(bias) < Math.max(0.5, avg * 0.15)
+                  ? "No strong left or right tendency"
+                  : `Drifts ${bias > 0 ? "right" : "left"} by ${Math.abs(bias).toFixed(1)} yds on average`;
+              const bar = `<div style="display:flex;height:8px;border-radius:4px;overflow:hidden;margin:6px 0 4px"><div style="flex:${L.length};background:var(--blue)"></div><div style="flex:${S};background:var(--green)"></div><div style="flex:${R.length};background:#d99a2b"></div></div>`;
+              return `<div style="margin-bottom:14px"><div><b>${esc(pName(p.i))}</b> <span class="mu">· ${shots.length} shots</span></div>${bar}<div class="tl">${side("Left", L, "var(--blue)")}</div><div class="tl"><span style="color:var(--green)">■</span> Straight <b>${S}</b> (${pct(S, shots.length)})</div><div class="tl">${side("Right", R, "#d99a2b")}</div><div class="tl"><b>Overall</b> avg miss ${avg.toFixed(1)} yds · ${pctD(shots)}</div><div class="tl">${tend}</div></div>`;
+            })
+            .join("");
+          return blocks
+            ? `<div class="card"><h2 style="font-size:18px">Shot tendencies</h2>${blocks}<div class="hint">Every swing counts, including out of bounds shots. Percentages are the sideways miss as a share of the distance you hit.</div></div>`
+            : "";
+        })();
         const pbHtml = G.players
           .map((p, i) => {
             const n = G.scores[i].filter((x) => x !== null).length;
@@ -1312,7 +1365,8 @@
     <thead><tr><th>Stats</th>${G.players.map((p) => `<th>${esc(pName(p.i))}</th>`).join("")}</tr></thead>
     <tbody>${srow("Tee shots on fairway", "fw")}${srow("Greens in reg.", "gir")}${srow("Penalties (% of strokes)", "pen")}${srow("Putts per hole", "pt")}${srow("Stableford pts", "pts")}${c ? srow("Paper differential", "diff") : ""}</tbody>
   </table></div>
-  <p class="hint">Tee shot on fairway: the first shot of a hole lands within half the max variation (wider is the rough). Green in regulation: on the green in par minus 2 strokes or fewer. Penalties count out of bounds shots. Stableford: 2 pts for par, 3 birdie, 4 eagle, 1 bogey. Paper differential: (strokes minus course rating) x 113 / slope, scaled to the holes played. It assumes full distance, so it is most meaningful at 100%.</p>`
+  <p class="hint">Tee shot on fairway: the first shot of a hole lands within half the max variation (wider is the rough). Green in regulation: on the green in par minus 2 strokes or fewer. Penalties count out of bounds shots. Stableford: 2 pts for par, 3 birdie, 4 eagle, 1 bogey. Paper differential: (strokes minus course rating) x 113 / slope, scaled to the holes played. It assumes full distance, so it is most meaningful at 100%.</p>
+  ${shape}`
       : `<p class="sub">No holes were completed.</p>`
   }
   <button class="primary" data-act="menu">New Round</button>`;
@@ -1388,6 +1442,7 @@
         } else if (a === "resume") {
           G = resume.G;
           T = resume.T;
+          if (!T.shots) T.shots = [];
           screen = resume.screen;
           resume = null;
           keepAwake();
