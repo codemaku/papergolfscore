@@ -1,0 +1,809 @@
+/* ==========================================================================
+   Paper Golf Score
+   Tokens -> base -> buttons -> components -> screens -> responsive
+   ========================================================================== */
+
+:root {
+  --bg: #f1f4ef;
+  --card: #fbfcfa;
+  --ink: #1a2420;
+  --mute: #66726b;
+  --line: #d8ded6;
+  --track: #cfd8d0;
+  --green: #2f6b4f;
+  --btn: #2f6b4f; /* fill behind white button text */
+  --blue: #2563c9; /* focus ring + "left" data colour only */
+  --red: #b3372c;
+  --gold: #d99a2b;
+  --warn: #fbe9e6;
+  --ok: #e4f1e9;
+  --putt-1: #1f5a42;
+  --putt-2: #12392a;
+
+  /* scale */
+  --r-lg: 16px;
+  --r-md: 12px;
+  --r-sm: 10px;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --tap: 48px;
+
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121815;
+    --card: #1b231f;
+    --ink: #e8eee9;
+    --mute: #98a49d;
+    --line: #2d3832;
+    --track: #33403a;
+    --green: #5fb58a;
+    --btn: #2d7455;
+    --blue: #6b9cf0;
+    --red: #ef7a6c;
+    --warn: #3a1f1b;
+    --ok: #1d3326;
+    --putt-1: #2f7d5c;
+    --putt-2: #1d5640;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121815;
+  --card: #1b231f;
+  --ink: #e8eee9;
+  --mute: #98a49d;
+  --line: #2d3832;
+  --track: #33403a;
+  --green: #5fb58a;
+  --btn: #2d7455;
+  --blue: #6b9cf0;
+  --red: #ef7a6c;
+  --warn: #3a1f1b;
+  --ok: #1d3326;
+  --putt-1: #2f7d5c;
+  --putt-2: #1d5640;
+}
+
+/* ---------- base ---------- */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font:
+    16px/1.45 -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--s4) max(var(--s4), env(safe-area-inset-right, 0px)) 40px
+    max(var(--s4), env(safe-area-inset-left, 0px));
+}
+h1 {
+  font: 700 32px/1.1 Georgia, "Times New Roman", serif;
+  letter-spacing: -0.01em;
+  margin: var(--s2) 0 var(--s1);
+}
+h2 {
+  font: 700 22px/1.2 Georgia, serif;
+  margin: 0 0 var(--s2);
+}
+h2.title {
+  margin-top: var(--s4);
+}
+h2.h3 {
+  font-size: 18px;
+}
+.sub {
+  color: var(--mute);
+  font-size: 14px;
+  margin: 0 0 var(--s4);
+}
+.grow {
+  flex: 1;
+}
+.mt {
+  margin-top: var(--s3);
+}
+
+/* ---------- cards ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--s4);
+  margin-bottom: var(--s3);
+}
+.card > label:first-child {
+  margin-top: 0;
+}
+.hint + .card,
+.primary + .card {
+  margin-top: var(--s4);
+}
+
+/* ---------- form fields ---------- */
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mute);
+  margin: var(--s3) 0 6px;
+}
+select,
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  min-height: var(--tap);
+  font: inherit;
+  font-size: 17px;
+  padding: 10px var(--s3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  color: var(--ink);
+}
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 40px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--mute) 50%),
+    linear-gradient(135deg, var(--mute) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 14px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+select:focus,
+input[type="text"]:focus,
+input[type="number"]:focus {
+  border-color: var(--green);
+}
+.hint {
+  color: var(--mute);
+  font-size: 13px;
+  margin-top: 6px;
+}
+.hint.flush {
+  margin: 0 0 var(--s3);
+}
+.help {
+  color: var(--mute);
+  font-size: 13px;
+  margin-top: var(--s3);
+}
+.err {
+  color: var(--red);
+  font-size: 14px;
+  margin-top: var(--s2);
+}
+
+/* ---------- buttons: one system ---------- */
+button {
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: var(--r-md);
+  padding: var(--s3) var(--s2);
+  min-height: var(--tap);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    transform 0.08s ease,
+    background-color 0.15s ease;
+}
+button:active {
+  transform: scale(0.97);
+}
+button:disabled {
+  opacity: 0.4;
+}
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+.wide {
+  width: 100%;
+}
+.primary {
+  background: var(--btn);
+  border-color: var(--btn);
+  color: #fff;
+  font-size: 18px;
+  min-height: 56px;
+  width: 100%;
+  border-radius: var(--r-lg);
+}
+.row .primary {
+  min-height: var(--tap);
+  font-size: 16px;
+  width: auto;
+  border-radius: var(--r-md);
+}
+.danger {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+.stack {
+  display: grid;
+  gap: var(--s2);
+  margin-top: var(--s3);
+}
+.row {
+  display: flex;
+  gap: var(--s2);
+}
+.row > * {
+  flex: 1;
+}
+
+/* the one loud button: Putt, when the ball is on the green */
+.putt-big {
+  width: 100%;
+  min-height: 80px;
+  margin: 0 0 var(--s3);
+  padding: var(--s3) var(--s4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: #fff;
+  font: 700 28px/1.1 Georgia, serif;
+  letter-spacing: 0.01em;
+  background: linear-gradient(180deg, var(--putt-1), var(--putt-2));
+  border: 2px solid var(--gold);
+  border-radius: var(--r-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  animation: puttGlow 2.6s ease-in-out infinite;
+}
+.putt-big small {
+  font:
+    500 13px/1.2 -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  color: #f1d9a0;
+}
+@keyframes puttGlow {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 0 0 0 rgba(217, 154, 43, 0);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 0 0 6px rgba(217, 154, 43, 0.3);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .putt-big {
+    animation: none;
+  }
+  button {
+    transition: none;
+  }
+}
+
+/* ---------- header bar + scoreboard ---------- */
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s2);
+  margin-bottom: var(--s3);
+}
+.sb {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+.sb > span {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-variant-numeric: tabular-nums;
+}
+.sb > span span {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.top .sb {
+  flex: 1;
+}
+.exit {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 var(--s4);
+  font-size: 14px;
+  border-radius: 999px;
+  color: var(--red);
+}
+.hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+  font-size: 14px;
+  color: var(--mute);
+}
+.hd b {
+  color: var(--ink);
+}
+.hd.sp {
+  margin: 6px 0 var(--s3);
+}
+
+/* ---------- play: stats + inputs ---------- */
+.big {
+  display: flex;
+  text-align: center;
+}
+.big > div {
+  flex: 1;
+}
+.big > div + div {
+  border-left: 1px solid var(--line);
+}
+.num {
+  font: 700 56px/1 Georgia, serif;
+  font-variant-numeric: tabular-nums;
+}
+.lab {
+  font-size: 13px;
+  color: var(--mute);
+}
+.lab.mt {
+  margin-top: var(--s4);
+}
+.lim {
+  font-size: 13px;
+  color: var(--mute);
+  text-align: center;
+  margin-top: var(--s3);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line);
+}
+.msg {
+  border-radius: var(--r-md);
+  padding: var(--s3) var(--s4);
+  margin-bottom: var(--s3);
+  font-size: 15px;
+}
+.msg.bad {
+  background: var(--warn);
+  color: var(--red);
+  font-weight: 600;
+}
+.msg.ok {
+  background: var(--ok);
+  color: var(--green);
+}
+.inp {
+  text-align: center;
+}
+input.numin {
+  width: 100%;
+  min-height: 0;
+  padding-right: 0;
+  text-align: center;
+  font: 700 52px/1 Georgia, serif;
+  border: 0;
+  border-bottom: 2px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 2px 0 6px;
+  margin: 2px 0 var(--s2);
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+input.numin:focus {
+  border-bottom-color: var(--green);
+}
+input.numin:focus-visible {
+  outline: none;
+}
+input.numin::-webkit-outer-spin-button,
+input.numin::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  margin: 2px 0 var(--s2);
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--track);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 30px;
+  height: 30px;
+  margin-top: -11px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--green);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+input[type="range"]::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--track);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--green);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* step buttons under each slider */
+.btns {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.btns.two {
+  grid-template-columns: repeat(4, 1fr);
+}
+.btns button {
+  padding: var(--s3) 0;
+  font-size: 15px;
+  background: var(--bg);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Left | Right toggle */
+.seg {
+  gap: 0;
+  margin-bottom: var(--s2);
+}
+.seg button {
+  border-radius: 0;
+  background: var(--bg);
+}
+.seg button:first-child {
+  border-radius: var(--r-md) 0 0 var(--r-md);
+}
+.seg button:last-child {
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  border-left: 0;
+}
+.seg button.on {
+  background: var(--btn);
+  border-color: var(--btn);
+  color: #fff;
+}
+
+/* ---------- putt screen ---------- */
+.puttfor {
+  display: inline-block;
+  font: 700 21px/1.2 Georgia, serif;
+  padding: var(--s2) 18px;
+  border-radius: 999px;
+  margin-bottom: var(--s4);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.puttfor.under {
+  background: var(--ok);
+  border-color: var(--green);
+  color: var(--green);
+}
+.puttfor.over {
+  background: var(--warn);
+  border-color: var(--red);
+  color: var(--red);
+}
+.stepper {
+  align-items: center;
+  margin-top: var(--s2);
+}
+.stepper button {
+  min-height: 56px;
+  font-size: 20px;
+}
+.stepper .num {
+  flex: 1.2;
+}
+
+/* ---------- result screen ---------- */
+.verdict {
+  font: 700 40px/1.1 Georgia, serif;
+}
+.verdict-sub {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: var(--s1);
+}
+.cum {
+  border: 2px solid var(--ink);
+}
+.cum .r {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--s2) 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 17px;
+}
+.cum .r:last-child {
+  border: 0;
+}
+.under {
+  color: var(--green);
+}
+.over {
+  color: var(--red);
+}
+
+/* ---------- setup ---------- */
+.prow + .prow {
+  border-top: 1px solid var(--line);
+  padding-top: var(--s1);
+  margin-top: var(--s4);
+}
+.prow:first-child label:first-child {
+  margin-top: 0;
+}
+.prow .row {
+  align-items: center;
+}
+.prow .rm {
+  flex: 0 0 96px;
+  color: var(--red);
+}
+.chk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-size: 16px;
+  margin: var(--s3) 0 var(--s1);
+}
+.chk input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--green);
+}
+
+/* playing-distance slider: drag bar + live percentage */
+.fslider {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+.fslider input[type="range"] {
+  flex: 1;
+  margin: 0;
+}
+.fslider output {
+  flex: 0 0 64px;
+  text-align: right;
+  font: 700 24px/1 Georgia, serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* history rows */
+.tl {
+  font-size: 14px;
+  color: var(--mute);
+  padding: 3px 0;
+}
+.tl b {
+  color: var(--ink);
+}
+.card > .tl {
+  padding: var(--s2) 0;
+  border-top: 1px solid var(--line);
+}
+.card > .tl:first-child,
+h2 + .tl {
+  border-top: 0;
+}
+.hist {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--mute);
+  background: var(--bg);
+  border-radius: var(--r-md);
+  padding: var(--s3) 36px var(--s3) var(--s3);
+  margin-top: var(--s2);
+  position: relative;
+  min-height: 56px;
+}
+.hist::after {
+  content: "›";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 26px;
+  line-height: 1;
+  color: var(--mute);
+}
+.hist b {
+  color: var(--ink);
+}
+
+/* ---------- scorecard tables ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+th,
+td {
+  padding: 10px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+th {
+  font-size: 13px;
+  color: var(--mute);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+th:first-child,
+.hn {
+  text-align: left;
+}
+.hn {
+  font-weight: 600;
+}
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+tfoot td {
+  font-weight: 700;
+  border-top: 2px solid var(--ink);
+  border-bottom: 0;
+}
+.wrap {
+  overflow-x: auto;
+}
+.center {
+  text-align: center;
+}
+.pr,
+.mu {
+  color: var(--mute);
+}
+.sc {
+  font-size: 18px;
+  font-weight: 700;
+}
+.st {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--mute);
+}
+
+/* ---------- modal ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+.mbox {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: var(--s5) 20px 20px;
+  width: 100%;
+  max-width: 360px;
+}
+
+/* ---------- two-column wrappers (wide screens only) ---------- */
+.inputs,
+.cols {
+  display: block;
+}
+@media (min-width: 768px), (orientation: landscape) {
+  .inputs,
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s3);
+    align-items: stretch;
+    margin-bottom: var(--s3);
+  }
+  .inputs > .card,
+  .cols > .card {
+    margin-bottom: 0;
+  }
+}
+@media (min-width: 768px) {
+  #app {
+    max-width: 768px;
+  }
+}
+@media (orientation: landscape) {
+  #app {
+    max-width: 900px;
+  }
+  .stack {
+    grid-template-columns: 1fr 1fr;
+  }
+  .stack > :only-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* short landscape (phone on its side): tighter, still >= 44px targets */
+@media (orientation: landscape) and (max-height: 520px) {
+  #app {
+    padding-top: var(--s2);
+    padding-bottom: var(--s5);
+  }
+  h1 {
+    font-size: 26px;
+  }
+  .num,
+  input.numin {
+    font-size: 40px;
+  }
+  .card {
+    padding: var(--s3);
+  }
+  button {
+    min-height: 44px;
+  }
+  .primary {
+    min-height: 52px;
+  }
+  .putt-big {
+    min-height: 64px;
+    font-size: 24px;
+  }
+  .stepper button {
+    min-height: 48px;
+  }
+}
